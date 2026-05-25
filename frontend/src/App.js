@@ -3,12 +3,17 @@ import axios from "axios";
 
 function App(){
   const [file,setFile] = useState(null);
+  const [text,setText]=useState("");
+  const [skills,setSkills]=useState([]);
   const handleUpload=async()=>{
     const formData = new FormData();
     formData.append("resume",file);
     try{
       const response = await axios.post("http://localhost:5000/upload",formData
       );
+      setText(response.data.extractedText);
+      setSkills(response.data.skills);
+      <p>{text}</p>
       console.log(response.data);
     }catch(error){
       console.error("Error uploading file:",error);
@@ -21,6 +26,16 @@ function App(){
       <br /><br />
       {file && <p>Selected file: {file.name}</p>}
       <button onClick={handleUpload}>Upload Resume</button>
+      {skills.length > 0 && (
+        <div>
+          <h2>Detected Skills:</h2>
+          <ul>
+            {skills.map((skill, index) => (
+              <li key={index}>{skill}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }

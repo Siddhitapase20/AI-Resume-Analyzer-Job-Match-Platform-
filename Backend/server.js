@@ -1,7 +1,17 @@
 const express =require("express");
 const cors=require("cors");
+const multer =require("multer");
+
 const app=express();
+const fs = require("fs");
+const pdfParse = require("pdf-parse");
 app.use(cors());
+const skillsList=[
+    "JavaScript","Python", "Java",  "C++","React",   "Node.js","css", "machine learning", "data analysis", "sql","C","ruby","postgreSQL",
+    "mongodb",   "aws",  "devops", "docker","kubernetes", "git",  "html","angular", "vue.js","typescript", "swift",  "kotlin","flutter","django",
+    "spring", "laravel", "ruby on rails","tensorflow", "pytorch", "natural language processing","computer vision", "deep learning","data science",
+    "big data", "hadoop", "spark","scala", "go", "rust", "php", "asp.net", "graphql", "restful api", "microservices", "agile methodologies", "scrum", "kanban", "test-driven development","continuous integration", "continuous deployment",
+]
 
 const storage = multer.diskStorage({
     destination:function(req,file,cb){
@@ -13,10 +23,21 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({storage:storage});
-app.post("/upload",upload.single("resume"),(req,res)=>{
+app.post("/upload",upload.single("resume"),async(req,res)=>{
+    const dataBuffer=fs.readFileSync(req.file.path);
+    const pdfData=await pdfParse(dataBuffer);
+    const extractedSkills =[];
+    const lowerText=pdfData.text.toLowerCase();
+    skillsList.forEach((skill) => {
+        if(lowerText.includes(skill)){
+            extractedSkills.push(skill);
+        }
+    });
+
     res.json({
-        message: "file uploaded successfully",
-        file:req.file
+        extractedText:pdfData.text,
+        skills: extractedSkills
+
     });
 });
 
