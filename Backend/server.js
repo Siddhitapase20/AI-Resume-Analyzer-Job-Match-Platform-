@@ -29,7 +29,7 @@ app.post("/upload",upload.single("resume"),async(req,res)=>{
     const extractedSkills =[];
     const lowerText=pdfData.text.toLowerCase();
     skillsList.forEach((skill) => {
-        if(lowerText.includes(skill)){
+        if(lowerText.includes(skill.toLocaleLowerCase())){
             extractedSkills.push(skill);
         }
     });
