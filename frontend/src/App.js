@@ -1,5 +1,18 @@
 import React, { useState } from "react";
 import axios from "axios";
+import {Pie} from "react-chartjs-2";
+
+import{
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend
+} from "chart.js";
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend
+);
 
 function App() {
 
@@ -11,7 +24,18 @@ function App() {
   const [missingSkills, setMissingSkills] = useState([]);
   const [atsScore, setAtsScore] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
-
+  
+  const chartData={
+    labels:["Matched Skills","Missing Skills"],
+    datasets:[
+      {
+        label:"Skills",
+        data:[matchedSkills.length,missingSkills.length],
+        backgroundColor:["green","red"],
+        borderWidth:1
+      }
+    ]
+  };
   const handleUpload = async () => {
 
     const formData = new FormData();
@@ -125,7 +149,26 @@ function App() {
 
             <div style={cardStyle}>
               <h2>{atsScore}%</h2>
-              <p>ATS Score</p>
+              <div 
+              style={{
+                width:"100%",
+                backgroundColor:"#ddd",
+                borderRadius:"10px",
+                overflow:"hidden",
+                marginTop:"10px"
+              }}
+              >
+                <div
+                style={{
+                  width:`${atsScore}%`,
+                  backgroundColor: atsScore >= 80 ? "#28a745" : atsScore >= 60 ? "#ffc107" : "#dc3545",
+                  height:"12px"
+                }}
+                ></div>
+                </div>
+                <p>ATS Score</p>
+
+              
             </div>
 
             <div style={cardStyle}>
@@ -183,6 +226,16 @@ function App() {
                 </span>
               ))}
             </div>
+
+            <h2>Skills Analysis Chart</h2>
+            <div
+            style={{
+              width:"350px",
+              margin:"auto"
+            }}
+            >
+            <Pie data={chartData} />
+            </div><br/>
 
             <h2>Suggestions</h2>
 
