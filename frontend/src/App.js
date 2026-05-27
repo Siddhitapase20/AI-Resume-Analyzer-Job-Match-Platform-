@@ -24,6 +24,7 @@ function App() {
   const [missingSkills, setMissingSkills] = useState([]);
   const [atsScore, setAtsScore] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
+  const [aiResponse,setAiResponse]=useState("");
   
   const chartData={
     labels:["Matched Skills","Missing Skills"],
@@ -56,6 +57,7 @@ function App() {
       setMissingSkills(response.data.missingSkills || []);
       setAtsScore(response.data.atsScore || 0);
       setSuggestions(response.data.suggestions || []);
+      setAiResponse(response.data.aiResponse);
 
     } catch (error) {
 
@@ -245,7 +247,18 @@ function App() {
               ))}
             </ul>
 
+            <h2>AI Analysis</h2>
+            <div
+            style={{
+              background:"#f5f5f5",
+              padding:"20px",
+              borderRadius:"10px"
+            }}
+            >
+              <pre style={{whiteSpace:"pre-wrap"}}>{aiResponse}</pre>
+            </div>
           </div>
+          
         )}
 
       </div>

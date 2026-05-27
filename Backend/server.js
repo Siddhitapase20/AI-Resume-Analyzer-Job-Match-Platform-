@@ -4,6 +4,11 @@ const multer =require("multer");
 
 const app=express();
 const fs = require("fs");
+
+require("dotenv").config();
+const{
+    GoogleGenerativeAI
+}=require("@google/generative-ai");
 const pdfParse = require("pdf-parse");
 app.use(cors());
 const skillsList=[
@@ -12,6 +17,12 @@ const skillsList=[
     "spring", "laravel", "ruby on rails","tensorflow", "pytorch", "natural language processing","computer vision", "deep learning","data science",
     "big data", "hadoop", "spark","scala", "go", "rust", "php", "asp.net", "graphql", "restful api", "microservices", "agile methodologies", "scrum", "kanban", "test-driven development","continuous integration", "continuous deployment",
 ]
+const genAI=new GoogleGenerativeAI(
+    process.env.GEMINI_API_KEY
+);
+const model=genAI.getGenerativeModel({
+    model:"gemini-1.5-flash",
+});
 
 
 const storage = multer.diskStorage({
@@ -104,13 +115,33 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
         );
     }
 
+    const prompt = ` Analyze this resume.
+    Resume: ${pdfData.text}
+    Job Description: ${jobDescription}
+    Give:
+    1. Resume Summary
+    2. Improvements Suggestions
+    3. 3 Interview Questions based on the resume and job description.`;
+
+    let aiResponse="";
+    try{
+        const result=await model.generateContent(prompt);
+         aiResponse=await result.response.text();
+        
+    }    catch(error){
+        console.error("Error generating AI response:", error);
+        aiResponse="Error generating AI response.";
+        console.log(aiResponse);
+    }
+
     res.json({
         extractedText: pdfData.text,
         skills: extractedSkills,
         matchedSkills,
         missingSkills,
         atsScore,
-        suggestions
+        suggestions,
+        aiResponse
     });
 
 });
