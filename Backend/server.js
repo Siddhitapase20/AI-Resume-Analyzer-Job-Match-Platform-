@@ -124,26 +124,32 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     2. Improvements Suggestions
     3. 3 Interview Questions based on the resume and job description.`;
 
-    let aiResponse="";
-    try{
-        const completion = await client.chat.completions.create({
-           model: "meta-llama/llama-3-8b-instruct",
-           messages: [
-             {
+    let aiResponse = "";
+
+try {
+
+    const completion = await client.chat.completions.create({
+
+        model: "meta-llama/llama-3-8b-instruct",
+
+        messages: [
+            {
                 role: "user",
                 content: prompt
-             }
-         ]
-});
+            }
+        ]
+    });
 
-aiResponse = completion.choices[0].message.content;
-         console.log(aiResponse);
-        
-    }    catch(error){
-        console.error( error);
-        aiResponse="Error generating AI response.";
-        
-    }
+    aiResponse = completion.choices[0].message.content;
+
+    console.log(aiResponse);
+
+} catch(error) {
+
+    console.error(error);
+
+    aiResponse = "Error generating AI response.";
+}
 
     res.json({
         extractedText: pdfData.text,
