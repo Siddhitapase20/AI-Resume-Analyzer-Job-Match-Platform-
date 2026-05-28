@@ -6,9 +6,16 @@ const app=express();
 const fs = require("fs");
 
 require("dotenv").config();
-const{
-    GoogleGenerativeAI
-}=require("@google/generative-ai");
+console.log("KEY =", process.env.OPENROUTER_API_KEY);
+
+
+const OpenAI = require("openai");
+
+const client = new OpenAI({
+    baseURL: "https://openrouter.ai/api/v1",
+    apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 const pdfParse = require("pdf-parse");
 app.use(cors());
 const skillsList=[
@@ -17,12 +24,6 @@ const skillsList=[
     "spring", "laravel", "ruby on rails","tensorflow", "pytorch", "natural language processing","computer vision", "deep learning","data science",
     "big data", "hadoop", "spark","scala", "go", "rust", "php", "asp.net", "graphql", "restful api", "microservices", "agile methodologies", "scrum", "kanban", "test-driven development","continuous integration", "continuous deployment",
 ]
-const genAI=new GoogleGenerativeAI(
-    process.env.GEMINI_API_KEY
-);
-const model=genAI.getGenerativeModel({
-    model:"gemini-1.5-flash",
-});
 
 
 const storage = multer.diskStorage({
@@ -125,13 +126,23 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
 
     let aiResponse="";
     try{
-        const result=await model.generateContent(prompt);
-         aiResponse=await result.response.text();
+        const completion = await client.chat.completions.create({
+           model: "meta-llama/llama-3-8b-instruct",
+           messages: [
+             {
+                role: "user",
+                content: prompt
+             }
+         ]
+});
+
+aiResponse = completion.choices[0].message.content;
+         console.log(aiResponse);
         
     }    catch(error){
-        console.error("Error generating AI response:", error);
+        console.error( error);
         aiResponse="Error generating AI response.";
-        console.log(aiResponse);
+        
     }
 
     res.json({
@@ -145,6 +156,36 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     });
 
 });
+
+
+async function testAI() {
+
+    try {
+
+        const completion = await client.chat.completions.create({
+
+           model: "meta-llama/llama-3-8b-instruct",
+
+            messages: [
+                {
+                    role: "user",
+                    content: "Hello"
+                }
+            ]
+
+        });
+
+        console.log(completion.choices[0].message.content);
+
+    } catch (error) {
+
+        console.log(error);
+
+    }
+}
+
+testAI();
+
 app.listen(5000, () => {
     console.log("server is running on port 5000");
 });
