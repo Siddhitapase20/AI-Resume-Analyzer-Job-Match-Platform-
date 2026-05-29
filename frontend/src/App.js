@@ -49,8 +49,6 @@ function App() {
     
     formData.append("resume", file);
     formData.append("jobDescription", jobDesc);
-    
-
     try {
 
       const response = await axios.post(
@@ -69,7 +67,9 @@ function App() {
     } catch (error) {
 
       console.error("Error uploading file:", error);
-    }setLoading(false);
+    }finally{
+      setLoading(false);
+    }
   };
 
   // Download pdf 
@@ -96,7 +96,7 @@ function App() {
     const matched=doc.splitTextToSize(matchedSkills.join(", "),170);
     doc.text(matched,20,y);
     y+=matched.length*8+10;
-    doc.text("Misiing Skills:",20,y);
+    doc.text("Missing Skills:",20,y);
     y+=10;
     const missing=doc.splitTextToSize(missingSkills.join(", "),170);
     doc.text(missing,20,y);
@@ -116,20 +116,19 @@ function App() {
       y+=lines.length*8+5;
     });
       y+=10;
-      doc.setFileSize(16);
+      doc.setFontSize(16);
       doc.text("Complete AI Analaysis:",20,y);
       y+=12;
       doc.setFontSize(12);
       const aiLines=doc.splitTextToSize(aiResponse,170);
-      aiLines.forEach((line)=>{
-        if(y>pageHeight){
+      for(let i=0;i<aiLines.length;i++){
+        if(y>270){
           doc.addPage();
           y=20;
         }
-        doc.text(line,20,y);
+        doc.text(aiLines[i],20,y);
         y+=8;
-      });
-    
+      }
       doc.save("resume_analysis_report.pdf");
   };
 
@@ -213,18 +212,20 @@ function App() {
         <br /><br />
 
         <button
-          onClick={handleUpload}
-          style={{
-            padding: "12px 20px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer"
-          }}
-        >
-          {loading ? "Analyzing..." : "Upload Resume"}
-        </button>
+  onClick={handleUpload}
+  disabled={loading}
+  style={{
+    padding: "12px 20px",
+    backgroundColor: "#007bff",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    opacity: loading ? 0.6 : 1,
+    cursor: loading ? "not-allowed" : "pointer"
+  }}
+>
+  {loading ? "Analyzing..." : "Upload Resume"}
+</button>
 
         <br /><br />
 
@@ -364,36 +365,41 @@ function App() {
 
             <div style={sectionBox}>
             <h2>AI Analysis</h2>
-            <div
-            style={{
-              background:"#f5f5f5",
-              padding:"20px",
-              borderRadius:"10px"
-            }}
-            >
-              <div 
-              style={{
-                whiteSpace:"pre-wrap",
-                lineHeight:"1.8",
-                color:"#333",
-                fontSize:"15px",
-                fontFamily:"DM Sans",
-                background:"#fff",
-                padding:"15px",
-                borderRadius:"10px",
-                border:"1px solid #ddd"
 
-              }} >{aiResponse}</div>
-            </div>
-          </div></div>
-          
-        )}
+<div
+  style={{
+    background: "#f5f5f5",
+    padding: "20px",
+    borderRadius: "10px"
+  }}
+>
+  <pre
+    style={{
+      whiteSpace: "pre-wrap",
+      lineHeight: "1.8",
+      color: "#333",
+      fontSize: "15px",
+      fontFamily: "DM Sans",
+      background: "#fff",
+      padding: "15px",
+      borderRadius: "10px",
+      border: "1px solid #ddd",
+      overflowX: "auto"
+    }}
+  >
+    {aiResponse}
+    </pre>
+</div>
+</div>
 
-      </div>
-    </div></div>
-  );
+</div>
+)}
+
+</div>
+</div>
+</div>
+);
 }
-
 /* CARD STYLE */
 
 const cardStyle = {

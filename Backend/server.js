@@ -119,6 +119,17 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     const prompt = ` You are an ATS Resume Analyzer. Analyze the following resume and job description, then provide a summary, improvement suggestions, and interview questions professionally.
     Resume: ${pdfData.text}
     Job Description: ${jobDescription}
+
+    IMPORTANT RULES:
+    - Give clean professional output only.
+    - Do NOT generate random text.
+    - Do NOT repeat sections.
+    - Keep response concise and readable.
+    - Maximum 700 words.
+    - Use proper headings and bullet points.
+    - Stop after Final Hiring Recommendation.
+
+
     Give response in this format:
     1. Write a short professional summary of the candidate based on the resume and job description.
     2. Explain how well the resume matches the job.
@@ -126,8 +137,8 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     4. Weaknesses & Strengths in resume.
     5. Give 5 bullet improvement suggestions.
     6. Best Projects Mentioned in Resume.
-    6. Give 3 technical interview questions.
-    7. Final Hiring Recommendation.
+    7. Give 3 technical interview questions.
+    8. Final Hiring Recommendation.
     Keep response clean, modern, and properly formatted.
 `;
 
@@ -144,7 +155,7 @@ try {
                 role: "user",
                 content: prompt
             }
-        ]
+        ], max_tokens:900, temperature:0.4
     });
 
     aiResponse = completion.choices[0].message.content;
