@@ -40,6 +40,10 @@ function App() {
     ]
   };
   const handleUpload = async () => {
+    if(!file){
+      alert("Please upload a reusme");
+      return;
+    }
     setLoading(true);
     const formData = new FormData();
     
@@ -60,7 +64,6 @@ function App() {
       setMissingSkills(response.data.missingSkills || []);
       setAtsScore(response.data.atsScore || 0);
       setSuggestions(response.data.suggestions || []);
-      setLoading(false);
       setAiResponse(response.data.aiResponse);
 
     } catch (error) {
@@ -71,30 +74,63 @@ function App() {
 
   // Download pdf 
   const downloadPDF=()=>{
+    if(!aiResponse){
+      alert("No analysis available");
+      return;
+    }
     const doc=new jsPDF();
-    doc.setFontSize(20);
-    doc.text("AI Resume Analysis Report",20,20);
+    let y=20;
+    const pageHeight=280;
+
+    doc.setFontSize(22);
+    doc.text("AI Resume Analysis Report",20,y);
+    y+=20;
+
+    doc.setFontSize(16);
+    doc.text(`ATS Score: ${atsScore}%`,20,y);
+    y+=15;
 
     doc.setFontSize(14);
-    doc.text(`ATS Score: ${atsScore}%`,20,40);
+    doc.text("Matched Skills:",20,y);
+    y+=10;
+    const matched=doc.splitTextToSize(matchedSkills.join(", "),170);
+    doc.text(matched,20,y);
+    y+=matched.length*8+10;
+    doc.text("Misiing Skills:",20,y);
+    y+=10;
+    const missing=doc.splitTextToSize(missingSkills.join(", "),170);
+    doc.text(missing,20,y);
+    y+=missing.length*8+10;
+    
 
-    doc.text("Matched Skills:",20,55);
-    doc.text(matchedSkills.join(", "),20,65);
-
-    doc.text("Missing Skills:",20,85);
-    doc.text(missingSkills.join(", "),20,95);
-
-    doc.text("Suggestions:",20,115);
-
-    let y=125;
+    doc.text("Suggestions:",20,y);
+    y+=10;
     suggestions.forEach((item)=>{
-      doc.text(`• ${item}`,20,y);
-      y+=10;
+      const lines=doc.splitTextToSize(`• ${item}`,170);
+
+      if(y>pageHeight){
+        doc.addPage();
+        y=20;
+      }
+      doc.text(lines,20,y);
+      y+=lines.length*8+5;
     });
-    doc.text("AI Analysis:",20,y+10);
-    const splitText=doc.splitTextToSize(aiResponse,170);
-    doc.text(splitText,20,y+20);
-    doc.save("resume_analysis_report.pdf");
+      y+=10;
+      doc.setFileSize(16);
+      doc.text("Complete AI Analaysis:",20,y);
+      y+=12;
+      doc.setFontSize(12);
+      const aiLines=doc.splitTextToSize(aiResponse,170);
+      aiLines.forEach((line)=>{
+        if(y>pageHeight){
+          doc.addPage();
+          y=20;
+        }
+        doc.text(line,20,y);
+        y+=8;
+      });
+    
+      doc.save("resume_analysis_report.pdf");
   };
 
 
@@ -187,7 +223,7 @@ function App() {
             cursor: "pointer"
           }}
         >
-          Upload Resume
+          {loading ? "Analyzing..." : "Upload Resume"}
         </button>
 
         <br /><br />
@@ -202,7 +238,7 @@ function App() {
           border:"none",
           borderRadius:"10px",
           cursor:"pointer",
-          marginleft:"10px"}}
+          marginLeft:"10px"}}
           >
           Download PDF Report
         </button>
@@ -268,7 +304,7 @@ function App() {
 
         {skills.length > 0 && (
 
-          <div>
+          <div style={sectionBox}>
 
             <h2>Detected Skills</h2>
 
@@ -280,6 +316,7 @@ function App() {
               ))}
             </div>
 
+            <div style={sectionBox}>   
             <h2>Matched Skills</h2>
 
             <div style={tagContainer}>
@@ -289,7 +326,9 @@ function App() {
                 </span>
               ))}
             </div>
+            </div>
 
+            <div style={sectionBox}>
             <h2>Missing Skills</h2>
 
             <div style={tagContainer}>
@@ -299,7 +338,9 @@ function App() {
                 </span>
               ))}
             </div>
-
+            </div>
+            
+            <div style={sectionBox}>
             <h2>Skills Analysis Chart</h2>
             <div
             style={{
@@ -308,8 +349,9 @@ function App() {
             }}
             >
             <Pie data={chartData} />
-            </div><br/>
+            </div></div><br/>
 
+            <div style={sectionBox}>
             <h2>Suggestions</h2>
 
             <ul>
@@ -318,8 +360,9 @@ function App() {
               ))}
             </ul>
 
-            {loading && <h3>Analyzing with AI...</h3>}
+            {loading && <h3>Analyzing with AI...</h3>}</div>
 
+            <div style={sectionBox}>
             <h2>AI Analysis</h2>
             <div
             style={{
@@ -331,12 +374,18 @@ function App() {
               <div 
               style={{
                 whiteSpace:"pre-wrap",
-                lineheight:"1.8",
+                lineHeight:"1.8",
                 color:"#333",
-                fontSize:"15px"
+                fontSize:"15px",
+                fontFamily:"DM Sans",
+                background:"#fff",
+                padding:"15px",
+                borderRadius:"10px",
+                border:"1px solid #ddd"
+
               }} >{aiResponse}</div>
             </div>
-          </div>
+          </div></div>
           
         )}
 
@@ -354,6 +403,16 @@ const cardStyle = {
   width: "180px",
   textAlign: "center",
   boxShadow: "0px 0px 8px rgba(0,0,0,0.1)"
+};
+
+// section box
+const sectionBox={
+  background:"#fff",
+  padding:"20px",
+  borderRadius:"14px",
+  marginBottom:"20px",
+  border:"1px solid #e5e7eb",
+  boxShadow:"0px 2px 8px rgba(0,0,0,0.5)"
 };
 
 /* TAG CONTAINER */
