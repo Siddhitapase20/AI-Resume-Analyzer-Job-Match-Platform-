@@ -27,6 +27,8 @@ function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading,setLoading]=useState(false);
   const [aiResponse,setAiResponse]=useState("");
+  const leftMargin = 15;
+  const rightWidth=180;
   
   const chartData={
     labels:["Matched Skills","Missing Skills"],
@@ -78,7 +80,11 @@ function App() {
       alert("No analysis available");
       return;
     }
-    const doc=new jsPDF();
+    const doc=new jsPDF({
+      orientation:"portrait",
+      unit:"mm",
+      format:"a4"
+    });
     let y=20;
     const pageHeight=280;
 
@@ -90,7 +96,8 @@ function App() {
     y+=15;
     doc.setFontSize(10);
     doc.setTextColor(120);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`,20,y);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`,leftMargin,y);
+
     y+=10;
 
     //LINE 
@@ -101,30 +108,30 @@ function App() {
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0, 102, 204); 
-    doc.text("ATS Score", 20, y);
+    doc.text("ATS Score",leftMargin, y);
 
 
     doc.setFont("helvetica", "normal"); 
     doc.setTextColor(0, 0, 0); 
-    doc.text(`${atsScore}%`, 70, y); 
+    doc.text(`${atsScore}%`,60,y);
     y += 15;
 
     doc.setFontSize(14);
-    doc.text("Matched Skills:",20,y);
+    doc.text("Matched Skills:",leftMargin, y);
     y+=10;
     const matched=doc.splitTextToSize(matchedSkills.join(", "),170);
-    doc.text(matched,20,y);
+    doc.text(matched,leftMargin, y);
     y+=matched.length*8+10;
-    doc.text("Missing Skills:",20,y);
+    doc.text("Missing Skills:",leftMargin, y);
     y+=10;
     const missing=doc.splitTextToSize(missingSkills.join(", "),170);
-    doc.text(missing,20,y);
+    doc.text(missing,leftMargin,y);
     y+=missing.length*8+10;
     
     //SUGGESTIONS
     doc.setFont("helvetica", "bold"); 
     doc.setTextColor(255, 140, 0); 
-    doc.text("Suggestions", 20, y); 
+    doc.text("Suggestions", leftMargin, y); 
     y += 10;
     doc.setFont("helvetica", "normal"); 
     doc.setTextColor(40, 40, 40); 
@@ -133,7 +140,7 @@ function App() {
       if (y > pageHeight) { 
         doc.addPage(); 
         y = 20; } 
-        doc.text(lines, 25, y); 
+        doc.text(lines, leftMargin, y); 
     y += lines.length * 7 + 5; }); 
     y += 10;
 
@@ -141,54 +148,55 @@ function App() {
       doc.setFont("helvetica", "bold"); 
       doc.setFontSize(15);
       doc.setTextColor(102, 51, 153); 
-      doc.text("Complete AI Analysis", 20, y); 
+      doc.text("Complete AI Analysis", leftMargin, y); 
       y += 10; 
+      
       doc.setFont("helvetica", "normal");
 doc.setTextColor(30, 30, 30);
 doc.setFontSize(12);
 
 const analysisLines = aiResponse.split("\n");
 
+const headings = [
+  "summary",
+  "match to job description",
+  "important missing skills",
+  "weaknesses",
+  "improvement suggestions",
+  "best projects",
+  "technical interview questions",
+  "final hiring recommendation"
+];
+
 analysisLines.forEach((line) => {
 
-    const headingKeywords = [
-      "Summary",
-      "Match to Job Description",
-      "Important Missing Skills",
-      "Weaknesses",
-      "Improvement Suggestions",
-      "Best Projects",
-      "Technical Interview Questions",
-      "Final Hiring Recommendation"
-    ];
+  const cleanLine = line.replace(/\*\*/g, "").trim();
 
-    const isHeading = headingKeywords.some(h =>
-  line.trim().startsWith(h)
-);
+  const isHeading = headings.some((heading) =>
+    cleanLine.toLowerCase().startsWith(heading)
+  );
 
-    if (isHeading) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(15);
-    } else {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-    }
+  if (isHeading) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+  } else {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+  }
 
-    const wrappedText = doc.splitTextToSize(line, 160);
+  const wrappedText = doc.splitTextToSize(cleanLine, rightWidth);
 
-    if (y + wrappedText.length * 7 > 270) {
-      doc.addPage();
-      y = 20;
-    }
+  if (y + wrappedText.length * 7 > 280) {
+    doc.addPage();
+    y = 20;
+  }
 
-    doc.text(wrappedText, 20, y);
-    y += wrappedText.length * 7 + 3;
-  });
+  doc.text(wrappedText, leftMargin, y);
+  y += wrappedText.length * 7 + 3;
+});
 
-  doc.save("resume_analysis_report.pdf");
-};
-
-  
+doc.save("resume_analysis_report.pdf");
+  };
 
   return (
     <div>
