@@ -134,11 +134,17 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     1. Write a short professional summary of the candidate based on the resume and job description.
     2. Explain how well the resume matches the job.
     3. Mention important missing skills.
+       <content>
     4. Weaknesses & Strengths in resume.
-    5. Give 5 bullet improvement suggestions.
+       <content>
+    5. 5 bullet improvement suggestions.
+       <content>
     6. Best Projects Mentioned in Resume.
-    7. Give 3 technical interview questions.
-    8. Final Hiring Recommendation.
+       <content>
+    7. 3 technical interview questions.
+       <content>
+    8. Final Hiring Recommendation:
+       <content>
     Keep response clean, modern, and properly formatted.
 `;
 
