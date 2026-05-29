@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import {Pie} from "react-chartjs-2";
+import jsPDF from "jspdf";
 
 import{
   Chart as ChartJS,
@@ -24,6 +25,7 @@ function App() {
   const [missingSkills, setMissingSkills] = useState([]);
   const [atsScore, setAtsScore] = useState(0);
   const [suggestions, setSuggestions] = useState([]);
+  const [loading,setLoading]=useState(false);
   const [aiResponse,setAiResponse]=useState("");
   
   const chartData={
@@ -38,11 +40,12 @@ function App() {
     ]
   };
   const handleUpload = async () => {
-
+    setLoading(true);
     const formData = new FormData();
-
+    
     formData.append("resume", file);
     formData.append("jobDescription", jobDesc);
+    
 
     try {
 
@@ -57,17 +60,70 @@ function App() {
       setMissingSkills(response.data.missingSkills || []);
       setAtsScore(response.data.atsScore || 0);
       setSuggestions(response.data.suggestions || []);
+      setLoading(false);
       setAiResponse(response.data.aiResponse);
 
     } catch (error) {
 
       console.error("Error uploading file:", error);
-
-    }
+    }setLoading(false);
   };
 
-  return (
+  // Download pdf 
+  const downloadPDF=()=>{
+    const doc=new jsPDF();
+    doc.setFontSize(20);
+    doc.text("AI Resume Analysis Report",20,20);
 
+    doc.setFontSize(14);
+    doc.text(`ATS Score: ${atsScore}%`,20,40);
+
+    doc.text("Matched Skills:",20,55);
+    doc.text(matchedSkills.join(", "),20,65);
+
+    doc.text("Missing Skills:",20,85);
+    doc.text(missingSkills.join(", "),20,95);
+
+    doc.text("Suggestions:",20,115);
+
+    let y=125;
+    suggestions.forEach((item)=>{
+      doc.text(`• ${item}`,20,y);
+      y+=10;
+    });
+    doc.text("AI Analysis:",20,y+10);
+    const splitText=doc.splitTextToSize(aiResponse,170);
+    doc.text(splitText,20,y+20);
+    doc.save("resume_analysis_report.pdf");
+  };
+
+
+  return (
+    <div>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400;500&display=swap');
+      :root{
+      --accent:#5b4cdd;
+      --bg:#f7f8fa;
+      --surface:#ffffff;
+      --text:#0d0f12;
+      --text2: #5a6270;
+      --border:#e2e6ea;}
+      [data-theme="dark"]{
+      --bg:#1a1d27;
+      --surface:#1a1f2e;
+      --text:#f0f2ff;
+      --text2: #8b91a8;
+      --border:#2e3348;}
+        body{
+        background: var(--bg);
+        font-family:'DM Sans', sans-serif;
+        transition: all 0.2s ease;
+        }
+        h1,h2,h3{
+          font-family:'Syne', sans-serif;}
+        `}
+      </style>
+    
     <div
       style={{
         backgroundColor: "#f4f6f8",
@@ -135,6 +191,21 @@ function App() {
         </button>
 
         <br /><br />
+
+        {/* DOWNLOAD BUTTON */}
+        <button
+        onClick={downloadPDF}
+        style={{
+          padding:"12px 20px",
+          backgroundColor: "#28a745",
+          color:"white",
+          border:"none",
+          borderRadius:"10px",
+          cursor:"pointer",
+          marginleft:"10px"}}
+          >
+          Download PDF Report
+        </button>
 
         {/* DASHBOARD CARDS */}
 
@@ -247,6 +318,8 @@ function App() {
               ))}
             </ul>
 
+            {loading && <h3>Analyzing with AI...</h3>}
+
             <h2>AI Analysis</h2>
             <div
             style={{
@@ -255,15 +328,20 @@ function App() {
               borderRadius:"10px"
             }}
             >
-              <pre style={{whiteSpace:"pre-wrap"}}>{aiResponse}</pre>
+              <div 
+              style={{
+                whiteSpace:"pre-wrap",
+                lineheight:"1.8",
+                color:"#333",
+                fontSize:"15px"
+              }} >{aiResponse}</div>
             </div>
           </div>
           
         )}
 
       </div>
-
-    </div>
+    </div></div>
   );
 }
 
