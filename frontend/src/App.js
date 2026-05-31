@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import axios from "axios";
 import {Pie} from "react-chartjs-2";
 import jsPDF from "jspdf";
+
 
 import{
   Chart as ChartJS,
@@ -30,6 +31,7 @@ function App() {
   const leftMargin = 15;
   const rightWidth=180;
   const [theme,setTheme]=useState("light");
+  const [displayScore, setDisplayScore] = useState(0);
   const chartData={
     labels:["Matched Skills","Missing Skills"],
     datasets:[
@@ -41,6 +43,23 @@ function App() {
       }
     ]
   };
+  useEffect(()  => {
+    if(atsScore===0)return;
+    let start=0;
+    const duration=1000;
+    const increment=atsScore/(duration/16);
+    const timer=setInterval(()=>{
+      start+=increment;
+      if(start>=atsScore){
+        setDisplayScore(atsScore);
+        clearInterval(timer);
+      }else{
+        setDisplayScore(Math.floor(start));
+      }
+      },16);
+      return()=>clearInterval(timer);
+  },[atsScore]);
+
   const toggleTheme=()=>{
     const next=theme==='light'?'dark':'light';
     setTheme(next);
@@ -202,6 +221,7 @@ doc.save("resume_analysis_report.pdf");
 
   return (
     <div>
+
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400;500&display=swap');
       :root{
       --accent: #5b4cdd;
@@ -217,7 +237,7 @@ doc.save("resume_analysis_report.pdf");
       --red: #e03e3e;
       --red-light: #fdeaea;
       --blue-light: #dbeafe;
-      --shadow: 0 2px 16px rgba(0,0,0,0,07);
+      --shadow: 0 2px 16px rgba(0,0,0,0.07);
       }
       [data-theme="dark"]{
       --bg:#0f1117;
@@ -258,6 +278,7 @@ doc.save("resume_analysis_report.pdf");
         transition: all 0.15s ease;
         }
         `}
+
       </style>
 
           {/* ── OUTER WRAPPER ── */}
@@ -407,14 +428,14 @@ doc.save("resume_analysis_report.pdf");
                   fontSize: "32px", fontWeight: 700,
                   color: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)"
                 }}>
-                  {atsScore}%
+                  {displayScore}%
                 </h2>
                 <div style={{
                   width: "100%", background: "var(--border)",
                   borderRadius: "999px", overflow: "hidden", marginTop: "10px", height: "8px"
                 }}>
                   <div style={{
-                    width: `${atsScore}%`,
+                    width: `${displayScore}%`,
                     background: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)",
                     height: "8px", borderRadius: "999px",
                     transition: "width 1s ease"
