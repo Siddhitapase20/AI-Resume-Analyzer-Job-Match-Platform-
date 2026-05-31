@@ -43,6 +43,9 @@ function App() {
       }
     ]
   };
+  useEffect(()=>{
+    document.documentElement.setAttribute("data-theme",theme);
+  },[]);
   useEffect(()  => {
     if(atsScore===0)return;
     let start=0;
@@ -191,7 +194,7 @@ const headings = [
 
 analysisLines.forEach((line) => {
 
-  const cleanLine = line.replace(/\*\*/g, "").trim();
+  const cleanLine = line.replace(/\*\*/g, "").replace(/^#+/g, "").trim();
 
   const isHeading = headings.some((heading) =>
     cleanLine.toLowerCase().startsWith(heading)
@@ -277,13 +280,56 @@ doc.save("resume_analysis_report.pdf");
         transform: translateY(-1px);
         transition: all 0.15s ease;
         }
-        `}
+        
+        @keyframes float1 {
+          0%, 100% { transform: translate(0px, 0px); }
+          50% { transform: translate(-20px, -20px); }
+        }
 
+        @keyframes float2 {
+          0%, 100% { transform: translate(0px, 0px); }
+          50% { transform: translate(-25px, 35px); }
+        }
+
+        @keyframes float3 {
+          0%, 100% { transform: translate(0px, 0px); }
+          50% { transform: translate(20px, 25px); }
+        }
+          `} 
+      
       </style>
 
           {/* ── OUTER WRAPPER ── */}
       <div style={{ background: "var(--bg)", minHeight: "100vh", transition: "background 0.3s ease" }}>
- 
+
+        {/* background orbs */}
+        <div style={{
+          position: "fixed", top:0, left: 0,
+          width: "100%", height: "100%", zIndex:0
+        }}>
+          {/* orb1- top left */}
+          <div style={{
+            position: "absolute", top:"10%", left:"5%",
+            width: "400px", height: "400px",borderRadius: "50%",
+            background: "radial-gradient(circle,rgba(91,76,221,0.12) 0%, transparent 70%)",
+            animation:" float1 8s ease-in-out infinite",
+          }} />
+            {/* orb2- top right */}
+          <div style={{
+            position: "absolute", top:"5%", right:"5%",
+            width: "300px", height: "300px",borderRadius: "50%",
+            background: "radial-gradient(circle,rgba(26,158,92,0.10) 0%, transparent 70%)",
+            animation:" float2 10s ease-in-out infinite",
+          }}/>
+          {/* orb3- bottom center */}
+          <div style={{
+            position: "absolute", bottom:"10%", left:"40%",
+            width: "350px", height: "350px",borderRadius: "50%",
+            background: "radial-gradient(circle,rgba(224,62,62,0.07) 0%, transparent 70%)",
+            animation:" float3 12s ease-in-out infinite",
+          }}/>
+          </div> 
+          
         {/* ── NAVBAR ── */}
         <nav style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -326,7 +372,9 @@ doc.save("resume_analysis_report.pdf");
         </nav>
  
         {/* ── MAIN ── */}
-        <main style={{ maxWidth: "960px", margin: "0 auto", padding: "40px 24px" }}>
+        <main style={{ maxWidth: "960px", margin: "0 auto", padding: "40px 24px",
+          position: "relative", zIndex: 1
+         }}>
  
           {/* HERO */}
           <div style={{ textAlign: "center", marginBottom: "36px" }}>
@@ -398,6 +446,8 @@ doc.save("resume_analysis_report.pdf");
  
               <button
                 onClick={downloadPDF}
+                disabled={!aiResponse}
+
                 style={{
                   padding: "12px 28px",
                   background: "var(--green)",
@@ -418,7 +468,7 @@ doc.save("resume_analysis_report.pdf");
           </div>
  
           {/* ── DASHBOARD CARDS ── */}
-          {skills.length > 0 && (
+          {aiResponse || skills.length > 0 && (
             <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
  
               {/* ATS SCORE CARD */}
@@ -426,7 +476,7 @@ doc.save("resume_analysis_report.pdf");
                 <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "6px", fontWeight: 500 }}>ATS SCORE</p>
                 <h2 style={{
                   fontSize: "32px", fontWeight: 700,
-                  color: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)"
+                  color: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber: #f59e0b)" : "var(--red)"
                 }}>
                   {displayScore}%
                 </h2>
@@ -436,7 +486,7 @@ doc.save("resume_analysis_report.pdf");
                 }}>
                   <div style={{
                     width: `${displayScore}%`,
-                    background: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)",
+                    background: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber: #f59e0b)" : "var(--red)",
                     height: "8px", borderRadius: "999px",
                     transition: "width 1s ease"
                   }} />
@@ -465,7 +515,7 @@ doc.save("resume_analysis_report.pdf");
           )}
  
           {/* ── SKILLS SECTIONS ── */}
-          {skills.length > 0 && (
+          {(aiResponse || skills.length > 0) && (
             <div>
  
               {/* DETECTED SKILLS */}
@@ -518,35 +568,35 @@ doc.save("resume_analysis_report.pdf");
               </div>
  
               {/* AI ANALYSIS */}
-              <div style={sectionBox}>
-                <h2 style={sectionTitle}>🤖 AI Analysis</h2>
-                <div style={{
-                  background: "var(--surface2)",
-                  padding: "20px",
-                  borderRadius: "12px",
-                  border: "1px solid var(--border)"
-                }}>
-                  <pre style={{
-                    whiteSpace: "pre-wrap",
-                    lineHeight: "1.8",
-                    color: "var(--text)",
-                    fontSize: "14px",
-                    fontFamily: "DM Sans",
-                    overflowX: "auto"
-                  }}>
-                    {aiResponse}
-                  </pre>
-                </div>
-              </div>
- 
-            </div>
-          )}
- 
-        </main>
-      </div>
- 
+<div style={sectionBox}>
+  <h2 style={sectionTitle}>🤖 AI Analysis</h2>
+
+  <div
+    style={{
+      background: "var(--surface2)",
+      padding: "20px",
+      borderRadius: "12px",
+      border: "1px solid var(--border)"
+    }}
+  >
+    <div
+      style={{
+        whiteSpace: "pre-wrap",
+        lineHeight: "1.8"
+      }}
+    >
+      {aiResponse}
     </div>
-  );
+  </div>
+</div>
+
+</div>
+)}
+
+</main>
+</div>
+</div>
+);
 }
  
 /* ── STYLES ── */
