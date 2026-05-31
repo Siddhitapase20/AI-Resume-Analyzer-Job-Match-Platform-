@@ -29,7 +29,7 @@ function App() {
   const [aiResponse,setAiResponse]=useState("");
   const leftMargin = 15;
   const rightWidth=180;
-  
+  const [theme,setTheme]=useState("light");
   const chartData={
     labels:["Matched Skills","Missing Skills"],
     datasets:[
@@ -40,6 +40,11 @@ function App() {
         borderWidth:1
       }
     ]
+  };
+  const toggleTheme=()=>{
+    const next=theme==='light'?'dark':'light';
+    setTheme(next);
+    document.documentElement.setAttribute("data-theme",next);
   };
   const handleUpload = async () => {
     if(!file){
@@ -199,317 +204,390 @@ doc.save("resume_analysis_report.pdf");
     <div>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700&family=DM+Sans:wght@400;500&display=swap');
       :root{
-      --accent:#5b4cdd;
-      --bg:#f7f8fa;
-      --surface:#ffffff;
-      --text:#0d0f12;
+      --accent: #5b4cdd;
+      --accent-light: #ede9ff;
+      --bg: #f0f2f7;
+      --surface: #ffffff;
+      --surface2: #f5f6fa;
+      --text: #0d0f12;
       --text2: #5a6270;
-      --border:#e2e6ea;}
+      --border: #e2e6ea;
+      --green: #1a9e5c;
+      --green-light: #d4f7e7;
+      --red: #e03e3e;
+      --red-light: #fdeaea;
+      --blue-light: #dbeafe;
+      --shadow: 0 2px 16px rgba(0,0,0,0,07);
+      }
       [data-theme="dark"]{
-      --bg:#1a1d27;
-      --surface:#1a1f2e;
+      --bg:#0f1117;
+      --surface:#1a1d27;
+      --surface2:#22263a;
       --text:#f0f2ff;
       --text2: #8b91a8;
-      --border:#2e3348;}
+      --border:#2e3348;
+      --accent-light: #2d2660;
+      --green-light: #0d2e1e;
+      --red-light: #2e1010;
+      --blue-light: #1e2a45;
+      --shadow: 0 2px 16px rgba(0,0,0,0.3);}
         body{
         background: var(--bg);
         font-family:'DM Sans', sans-serif;
-        transition: all 0.2s ease;
+        color: var(--text);
+        transition: background 0.3s ease, color 0.3s ease;
         }
         h1,h2,h3{
           font-family:'Syne', sans-serif;}
+        textarea{
+        background: var(--surface2) !important;
+        color: var(--text) !important;
+        border: 1.5px solid var(--border) !important;
+        font-family:'DM Sans', sans-serif !important;
+        resize: vertical;
+        outline:none;
+        transition: border 0.2s ease;
+        }
+
+        textarea:focus{
+          border-color: var(--accent) !important;
+        }
+        button:hover{
+        opacity: 0.88;
+        transform: translateY(-1px);
+        transition: all 0.15s ease;
+        }
         `}
       </style>
-    
-    <div
-      style={{
-        backgroundColor: "#f4f6f8",
-        minHeight: "100vh",
-        padding: "40px",
-        fontFamily: "Arial"
-      }}
-    >
 
-      <div
-        style={{
-          maxWidth: "900px",
-          margin: "auto",
-          backgroundColor: "white",
-          padding: "30px",
-          borderRadius: "15px",
-          boxShadow: "0px 0px 10px rgba(0,0,0,0.1)"
-        }}
-      >
-
-        <h1 style={{ textAlign: "center" }}>
-          AI Resume Analyzer
-        </h1>
-
-        <input
-          type="file"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
-
-        <br /><br />
-
-        {file && (
-          <p>
-            Selected file: {file.name}
-          </p>
-        )}
-
-        <textarea
-          rows="8"
-          cols="80"
-          placeholder="Paste Job Description Here..."
-          value={jobDesc}
-          onChange={(e) => setJobDesc(e.target.value)}
-          style={{
-            padding: "10px",
-            borderRadius: "10px",
-            width: "100%"
-          }}
-        />
-
-        <br /><br />
-
-        <button
-  onClick={handleUpload}
-  disabled={loading}
-  style={{
-    padding: "12px 20px",
-    backgroundColor: "#007bff",
-    color: "white",
-    border: "none",
-    borderRadius: "10px",
-    opacity: loading ? 0.6 : 1,
-    cursor: loading ? "not-allowed" : "pointer"
-  }}
->
-  {loading ? "Analyzing..." : "Upload Resume"}
-</button>
-
-        <br /><br />
-
-        {/* DOWNLOAD BUTTON */}
-        <button
-        onClick={downloadPDF}
-        style={{
-          padding:"12px 20px",
-          backgroundColor: "#28a745",
-          color:"white",
-          border:"none",
-          borderRadius:"10px",
-          cursor:"pointer",
-          marginLeft:"10px"}}
-          >
-          Download PDF Report
-        </button>
-
-        {/* DASHBOARD CARDS */}
-
-        {skills.length > 0 && (
-
-          <div
-            style={{
-              display: "flex",
-              gap: "20px",
-              marginTop: "20px",
-              flexWrap: "wrap"
-            }}
-          >
-
-            <div style={cardStyle}>
-              <h2>{atsScore}%</h2>
-              <div 
-              style={{
-                width:"100%",
-                backgroundColor:"#ddd",
-                borderRadius:"10px",
-                overflow:"hidden",
-                marginTop:"10px"
-              }}
-              >
-                <div
-                style={{
-                  width:`${atsScore}%`,
-                  backgroundColor: atsScore >= 80 ? "#28a745" : atsScore >= 60 ? "#ffc107" : "#dc3545",
-                  height:"12px"
-                }}
-                ></div>
-                </div>
-                <p>ATS Score</p>
-
-              
+          {/* ── OUTER WRAPPER ── */}
+      <div style={{ background: "var(--bg)", minHeight: "100vh", transition: "background 0.3s ease" }}>
+ 
+        {/* ── NAVBAR ── */}
+        <nav style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "16px 40px",
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border)",
+          position: "sticky", top: 0, zIndex: 100,
+          boxShadow: "0 1px 12px rgba(0,0,0,0.06)"
+        }}>
+ 
+          {/* LOGO */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              width: "34px", height: "34px", borderRadius: "10px",
+              background: "var(--accent)", display: "flex",
+              alignItems: "center", justifyContent: "center"
+            }}>
+              <span style={{ color: "white", fontSize: "16px" }}>⚡</span>
             </div>
-
-            <div style={cardStyle}>
-              <h2>{skills.length}</h2>
-              <p>Detected Skills</p>
-            </div>
-
-            <div style={cardStyle}>
-              <h2>{matchedSkills.length}</h2>
-              <p>Matched Skills</p>
-            </div>
-
-            <div style={cardStyle}>
-              <h2>{missingSkills.length}</h2>
-              <p>Missing Skills</p>
-            </div>
-
+            <span style={{ fontFamily: "Syne", fontWeight: 700, fontSize: "20px", color: "var(--accent)" }}>
+              ResumeAI
+            </span>
           </div>
-        )}
-
-        <br />
-
-        {/* SKILLS SECTION */}
-
-        {skills.length > 0 && (
-
-          <div style={sectionBox}>
-
-            <h2>Detected Skills</h2>
-
-            <div style={tagContainer}>
-              {skills.map((skill, index) => (
-                <span key={index} style={blueTag}>
-                  {skill}
-                </span>
-              ))}
+ 
+          {/* DARK MODE BUTTON */}
+          <button onClick={toggleTheme} style={{
+            background: "var(--surface2)",
+            border: "1.5px solid var(--border)",
+            borderRadius: "999px",
+            padding: "8px 18px",
+            cursor: "pointer",
+            color: "var(--text2)",
+            fontSize: "13px",
+            fontFamily: "DM Sans",
+            fontWeight: 500
+          }}>
+            {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
+          </button>
+ 
+        </nav>
+ 
+        {/* ── MAIN ── */}
+        <main style={{ maxWidth: "960px", margin: "0 auto", padding: "40px 24px" }}>
+ 
+          {/* HERO */}
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
+            <h1 style={{ fontSize: "36px", fontWeight: 700, color: "var(--text)", marginBottom: "10px" }}>
+              AI Resume{" "}
+              <span style={{ color: "var(--accent)" }}>Analyzer</span>
+            </h1>
+            <p style={{ color: "var(--text2)", fontSize: "15px" }}>
+              Upload your resume and paste a job description to get instant AI-powered insights
+            </p>
+          </div>
+ 
+          {/* ── UPLOAD CARD ── */}
+          <div style={{
+            background: "var(--surface)",
+            borderRadius: "16px",
+            padding: "30px",
+            border: "1px solid var(--border)",
+            boxShadow: "var(--shadow)",
+            marginBottom: "24px"
+          }}>
+ 
+            {/* FILE INPUT */}
+            <input
+              type="file"
+              onChange={(e) => setFile(e.target.files[0])}
+              style={{ color: "var(--text)" }}
+            />
+ 
+            <br /><br />
+ 
+            {file && (
+              <p style={{ color: "var(--text2)", fontSize: "14px", marginBottom: "12px" }}>
+                 Selected: <strong style={{ color: "var(--text)" }}>{file.name}</strong>
+              </p>
+            )}
+ 
+            {/* JOB DESCRIPTION TEXTAREA */}
+            <textarea
+              rows="8"
+              placeholder="Paste Job Description Here..."
+              value={jobDesc}
+              onChange={(e) => setJobDesc(e.target.value)}
+              style={{ padding: "12px", borderRadius: "10px", width: "100%", fontSize: "14px" }}
+            />
+ 
+            <br /><br />
+ 
+            {/* BUTTONS ROW */}
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+ 
+              <button
+                onClick={handleUpload}
+                disabled={loading}
+                style={{
+                  padding: "12px 28px",
+                  background: loading ? "var(--border)" : "var(--accent)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  fontFamily: "DM Sans",
+                  fontWeight: 500,
+                  fontSize: "15px"
+                }}
+              >
+                {loading ? "⏳ Analyzing..." : "🚀 Analyze Resume"}
+              </button>
+ 
+              <button
+                onClick={downloadPDF}
+                style={{
+                  padding: "12px 28px",
+                  background: "var(--green)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  fontFamily: "DM Sans",
+                  fontWeight: 500,
+                  fontSize: "15px"
+                }}
+              >
+                 Download PDF Report
+              </button>
+ 
             </div>
-
-            <div style={sectionBox}>   
-            <h2>Matched Skills</h2>
-
-            <div style={tagContainer}>
-              {matchedSkills.map((skill, index) => (
-                <span key={index} style={greenTag}>
-                  {skill}
-                </span>
-              ))}
+ 
+          </div>
+ 
+          {/* ── DASHBOARD CARDS ── */}
+          {skills.length > 0 && (
+            <div style={{ display: "flex", gap: "16px", marginBottom: "24px", flexWrap: "wrap" }}>
+ 
+              {/* ATS SCORE CARD */}
+              <div style={cardStyle}>
+                <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "6px", fontWeight: 500 }}>ATS SCORE</p>
+                <h2 style={{
+                  fontSize: "32px", fontWeight: 700,
+                  color: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)"
+                }}>
+                  {atsScore}%
+                </h2>
+                <div style={{
+                  width: "100%", background: "var(--border)",
+                  borderRadius: "999px", overflow: "hidden", marginTop: "10px", height: "8px"
+                }}>
+                  <div style={{
+                    width: `${atsScore}%`,
+                    background: atsScore >= 80 ? "var(--green)" : atsScore >= 60 ? "var(--amber)" : "var(--red)",
+                    height: "8px", borderRadius: "999px",
+                    transition: "width 1s ease"
+                  }} />
+                </div>
+              </div>
+ 
+              {/* DETECTED SKILLS CARD */}
+              <div style={cardStyle}>
+                <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "6px", fontWeight: 500 }}>DETECTED SKILLS</p>
+                <h2 style={{ fontSize: "32px", fontWeight: 700, color: "var(--accent)" }}>{skills.length}</h2>
+              </div>
+ 
+              {/* MATCHED SKILLS CARD */}
+              <div style={cardStyle}>
+                <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "6px", fontWeight: 500 }}>MATCHED SKILLS</p>
+                <h2 style={{ fontSize: "32px", fontWeight: 700, color: "var(--green)" }}>{matchedSkills.length}</h2>
+              </div>
+ 
+              {/* MISSING SKILLS CARD */}
+              <div style={cardStyle}>
+                <p style={{ fontSize: "12px", color: "var(--text2)", marginBottom: "6px", fontWeight: 500 }}>MISSING SKILLS</p>
+                <h2 style={{ fontSize: "32px", fontWeight: 700, color: "var(--red)" }}>{missingSkills.length}</h2>
+              </div>
+ 
             </div>
+          )}
+ 
+          {/* ── SKILLS SECTIONS ── */}
+          {skills.length > 0 && (
+            <div>
+ 
+              {/* DETECTED SKILLS */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>🔍 Detected Skills</h2>
+                <div style={tagContainer}>
+                  {skills.map((skill, i) => (
+                    <span key={i} style={blueTag}>{skill}</span>
+                  ))}
+                </div>
+              </div>
+ 
+              {/* MATCHED SKILLS */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>✅ Matched Skills</h2>
+                <div style={tagContainer}>
+                  {matchedSkills.map((skill, i) => (
+                    <span key={i} style={greenTag}>{skill}</span>
+                  ))}
+                </div>
+              </div>
+ 
+              {/* MISSING SKILLS */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>⚠️ Missing Skills</h2>
+                <div style={tagContainer}>
+                  {missingSkills.map((skill, i) => (
+                    <span key={i} style={redTag}>{skill}</span>
+                  ))}
+                </div>
+              </div>
+ 
+              {/* PIE CHART */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>📊 Skills Analysis Chart</h2>
+                <div style={{ width: "320px", margin: "auto" }}>
+                  <Pie data={chartData} />
+                </div>
+              </div>
+ 
+              {/* SUGGESTIONS */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>💡 Suggestions</h2>
+                <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {suggestions.map((item, i) => (
+                    <li key={i} style={{ color: "var(--text2)", lineHeight: "1.6" }}>{item}</li>
+                  ))}
+                </ul>
+                {loading && <h3 style={{ color: "var(--text2)", marginTop: "12px" }}>Analyzing with AI...</h3>}
+              </div>
+ 
+              {/* AI ANALYSIS */}
+              <div style={sectionBox}>
+                <h2 style={sectionTitle}>🤖 AI Analysis</h2>
+                <div style={{
+                  background: "var(--surface2)",
+                  padding: "20px",
+                  borderRadius: "12px",
+                  border: "1px solid var(--border)"
+                }}>
+                  <pre style={{
+                    whiteSpace: "pre-wrap",
+                    lineHeight: "1.8",
+                    color: "var(--text)",
+                    fontSize: "14px",
+                    fontFamily: "DM Sans",
+                    overflowX: "auto"
+                  }}>
+                    {aiResponse}
+                  </pre>
+                </div>
+              </div>
+ 
             </div>
-
-            <div style={sectionBox}>
-            <h2>Missing Skills</h2>
-
-            <div style={tagContainer}>
-              {missingSkills.map((skill, index) => (
-                <span key={index} style={redTag}>
-                  {skill}
-                </span>
-              ))}
-            </div>
-            </div>
-            
-            <div style={sectionBox}>
-            <h2>Skills Analysis Chart</h2>
-            <div
-            style={{
-              width:"350px",
-              margin:"auto"
-            }}
-            >
-            <Pie data={chartData} />
-            </div></div><br/>
-
-            <div style={sectionBox}>
-            <h2>Suggestions</h2>
-
-            <ul>
-              {suggestions.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-
-            {loading && <h3>Analyzing with AI...</h3>}</div>
-
-            <div style={sectionBox}>
-            <h2>AI Analysis</h2>
-
-<div
-  style={{
-    background: "#f5f5f5",
-    padding: "20px",
-    borderRadius: "10px"
-  }}
->
-  <pre
-    style={{
-      whiteSpace: "pre-wrap",
-      lineHeight: "1.8",
-      color: "#333",
-      fontSize: "15px",
-      fontFamily: "DM Sans",
-      background: "#fff",
-      padding: "15px",
-      borderRadius: "10px",
-      border: "1px solid #ddd",
-      overflowX: "auto"
-    }}
-  >
-    {aiResponse}
-    </pre>
-</div>
-</div>
-
-</div>
-)}
-
-</div>
-</div>
-</div>
-);
+          )}
+ 
+        </main>
+      </div>
+ 
+    </div>
+  );
 }
-/* CARD STYLE */
-
+ 
+/* ── STYLES ── */
+ 
 const cardStyle = {
-  backgroundColor: "#ffffff",
-  padding: "20px",
-  borderRadius: "12px",
-  width: "180px",
+  background: "var(--surface)",
+  padding: "20px 24px",
+  borderRadius: "14px",
+  flex: "1",
+  minWidth: "160px",
   textAlign: "center",
-  boxShadow: "0px 0px 8px rgba(0,0,0,0.1)"
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)"
 };
-
-// section box
-const sectionBox={
-  background:"#fff",
-  padding:"20px",
-  borderRadius:"14px",
-  marginBottom:"20px",
-  border:"1px solid #e5e7eb",
-  boxShadow:"0px 2px 8px rgba(0,0,0,0.5)"
+ 
+const sectionBox = {
+  background: "var(--surface)",
+  padding: "24px",
+  borderRadius: "16px",
+  marginBottom: "20px",
+  border: "1px solid var(--border)",
+  boxShadow: "var(--shadow)"
 };
-
-/* TAG CONTAINER */
-
+ 
+const sectionTitle = {
+  fontSize: "18px",
+  fontWeight: 700,
+  color: "var(--text)",
+  marginBottom: "16px"
+};
+ 
 const tagContainer = {
   display: "flex",
   flexWrap: "wrap",
-  gap: "10px",
-  marginBottom: "20px"
+  gap: "10px"
 };
-
-/* TAGS */
-
+ 
 const blueTag = {
-  backgroundColor: "#d0e7ff",
-  padding: "8px 14px",
-  borderRadius: "20px"
+  background: "var(--blue-light)",
+  color: "var(--accent)",
+  padding: "7px 14px",
+  borderRadius: "999px",
+  fontSize: "13px",
+  fontWeight: 500
 };
-
+ 
 const greenTag = {
-  backgroundColor: "#d4f8d4",
-  padding: "8px 14px",
-  borderRadius: "20px"
+  background: "var(--green-light)",
+  color: "var(--green)",
+  padding: "7px 14px",
+  borderRadius: "999px",
+  fontSize: "13px",
+  fontWeight: 500
 };
-
+ 
 const redTag = {
-  backgroundColor: "#ffd6d6",
-  padding: "8px 14px",
-  borderRadius: "20px"
+  background: "var(--red-light)",
+  color: "var(--red)",
+  padding: "7px 14px",
+  borderRadius: "999px",
+  fontSize: "13px",
+  fontWeight: 500
 };
 
 export default App;
