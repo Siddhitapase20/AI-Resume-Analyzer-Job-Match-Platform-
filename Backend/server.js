@@ -6,15 +6,13 @@ const app=express();
 const fs = require("fs");
 
 require("dotenv").config();
-console.log("KEY =", process.env.OPENROUTER_API_KEY);
+console.log("KEY =", process.env.GEMINI_API_KEY);
 
 
-const OpenAI = require("openai");
-
-const client = new OpenAI({
-    baseURL: "https://openrouter.ai/api/v1",
-    apiKey: process.env.OPENROUTER_API_KEY,
-});
+const {GoogleGenerativeAI} = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(
+    process.env.GEMINI_API_KEY
+)
 
 const pdfParse = require("pdf-parse");
 app.use(cors());
@@ -152,19 +150,13 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
 
 try {
 
-    const completion = await client.chat.completions.create({
-
-        model: "meta-llama/llama-3-8b-instruct",
-
-        messages: [
-            {
-                role: "user",
-                content: prompt
-            }
-        ], max_tokens:900, temperature:0.4
+    const model = genAI.getGenerativeModel({
+        model: "gemini-2.5-flash"
     });
 
-    aiResponse = completion.choices[0].message.content;
+    const result = await model.generateContent(prompt);
+
+    aiResponse = result.response.text();
 
     console.log(aiResponse);
 
@@ -186,36 +178,6 @@ try {
     });
 
 });
-
-
-async function testAI() {
-
-    try {
-
-        const completion = await client.chat.completions.create({
-
-           model: "meta-llama/llama-3-8b-instruct",
-
-            messages: [
-                {
-                    role: "user",
-                    content: "Hello"
-                }
-            ]
-
-        });
-
-        console.log(completion.choices[0].message.content);
-
-    } catch (error) {
-
-        console.log(error);
-
-    }
-}
-
-testAI();
-
 app.listen(5000, () => {
     console.log("server is running on port 5000");
 });

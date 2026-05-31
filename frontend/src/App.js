@@ -53,10 +53,7 @@ function App() {
     formData.append("jobDescription", jobDesc);
     try {
 
-      const response = await axios.post(
-        "http://localhost:5000/upload",
-        formData
-      );
+      const response = await axios.post("http://localhost:5000/upload", formData);
 
       setText(response.data.extractedText);
       setSkills(response.data.skills);
